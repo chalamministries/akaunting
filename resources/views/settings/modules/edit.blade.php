@@ -24,7 +24,7 @@
                                     @break
                                 @case('select')
                                 @case('selectGroup')
-                                    @php 
+                                    @php
                                         $values = $field['values'];
                                         foreach ($values as $key => $value) {
                                             $values[$key] = trans($value);

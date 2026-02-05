@@ -1,0 +1,12 @@
+{
+    "name": "FluidPay",
+    "alias": "fluidpay",
+    "description": "FluidPay payment gateway integration.",
+    "author": "Your Name",
+    "version": "1.0.0",
+    "providers": [
+        "Modules\\FluidPay\\Providers\\ModuleServiceProvider"
+    ],
+    "settings": []
+
+}

@@ -79,11 +79,10 @@
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.9",
-        "brianium/paratest": "^7.1",
+        "phpunit/phpunit": "10.5.30",
         "fakerphp/faker": "^1.9.1",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
-        "phpunit/phpunit": "10.5.30",
         "spatie/laravel-ignition": "^2.0",
         "wnx/laravel-stats": "^2.11"
     },
@@ -92,13 +91,19 @@
             "dont-discover": []
         },
         "installer-paths": {
-            "modules/OfflinePayments": ["akaunting/module-offline-payments"],
-            "modules/PaypalStandard": ["akaunting/module-paypal-standard"]
+            "modules/OfflinePayments": [
+                "akaunting/module-offline-payments"
+            ],
+            "modules/PaypalStandard": [
+                "akaunting/module-paypal-standard"
+            ]
         }
     },
     "autoload": {
         "psr-4": {
-            "App\\": ["app/"],
+            "App\\": [
+                "app/"
+            ],
             "Akaunting\\Module\\Commands\\": "overrides/akaunting/laravel-module/Commands/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeds\\": "database/seeds/",
@@ -156,7 +161,8 @@
         ],
         "test": [
             "composer install --prefer-dist --no-interaction --no-scripts --no-progress --no-ansi",
-            "composer dump-autoload"
+            "composer dump-autoload",
+            "composer install --prefer-dist --no-interaction --no-scripts --no-suggest --no-progress --no-ansi"
         ]
     },
     "config": {
@@ -166,6 +172,11 @@
         "allow-plugins": {
             "mnsami/composer-custom-directory-installer": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": [
+                "PKSA-z3gr-8qht-p93v"
+            ]
         }
     }
 }
