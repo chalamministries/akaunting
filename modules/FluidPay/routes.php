@@ -5,14 +5,17 @@ use Modules\FluidPay\Controllers\Portal\InvoiceController as PortalInvoiceContro
 use Modules\FluidPay\Controllers\SettingsController;
 
 Route::admin('fluidpay', function (): void {
-    Route::group(['prefix' => 'settings', 'as' => 'settings.'], function (): void {
+    Route::group(['as' => 'settings.'], function (): void {
         Route::get('/', [SettingsController::class, 'edit'])
             ->name('edit');
 
         Route::post('/', [SettingsController::class, 'update'])
             ->name('update');
     });
-});
+}, [
+    'prefix' => 'settings/fluidpay',
+    'as' => 'fluidpay.',
+]);
 
 Route::portal('fluidpay', function (): void {
     Route::get('invoices/{invoice}', [PortalInvoiceController::class, 'show'])

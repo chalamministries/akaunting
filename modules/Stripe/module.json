@@ -1,0 +1,16 @@
+{
+    "alias": "stripe",
+    "version": "3.0.11",
+    "category": "payment-method",
+    "active": 1,
+    "providers": [
+        "Modules\\Stripe\\Providers\\Event",
+        "Modules\\Stripe\\Providers\\Main"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "reports": [],
+    "widgets": [],
+    "settings": []
+}

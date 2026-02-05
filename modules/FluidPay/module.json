@@ -4,6 +4,7 @@
     "description": "FluidPay payment gateway integration.",
     "author": "Your Name",
     "version": "1.0.0",
+    "active": 1,
     "providers": [
         "Modules\\FluidPay\\Providers\\ModuleServiceProvider"
     ],

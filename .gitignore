@@ -96,3 +96,6 @@ _ide_helper_models.php
 .laravelstatsrc
 .DS_Store
 /modules/PaypalStandard/
+/modules/OfflinePayments/
+/modules/Stripe/vendor/
+/modules/Stripe/vendor

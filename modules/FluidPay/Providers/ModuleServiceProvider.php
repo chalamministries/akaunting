@@ -21,8 +21,8 @@ class ModuleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadRoutesFrom(__DIR__ . '/../routes.php');
-        $this->loadViewsFrom(__DIR__ . '/../Views', 'fluidpay');
-        $this->loadTranslationsFrom(__DIR__ . '/../Lang', 'fluidpay');
+        $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'fluidpay');
+        $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'fluidpay');
 
         $this->registerPermissions();
         $this->registerSettingsMenu();
