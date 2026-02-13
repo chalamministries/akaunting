@@ -74,6 +74,10 @@
                 </x-form.section>
 
                 @foreach ($typesMeta as $type => $meta)
+                    @if ($type === 'retainer' && empty($show_retainers))
+                        @continue
+                    @endif
+
                     <x-form.section style=" background-color: #f2f4fc; padding: 15px; border-radius: 5px" class="rounded-lg">
                         <x-slot name="head">
                             <x-form.section.head
