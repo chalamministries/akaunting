@@ -3,6 +3,7 @@
 namespace Modules\FluidPay\Controllers;
 
 use App\Abstracts\Http\Controller;
+use App\Traits\Modules as ModulesTrait;
 use App\Utilities\Modules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,8 @@ use Modules\FluidPay\Support\Config;
 
 class SettingsController extends Controller
 {
+    use ModulesTrait;
+
     public function __construct()
     {
         $this->middleware('permission:read-fluidpay-settings')->only('edit');
@@ -24,6 +27,7 @@ class SettingsController extends Controller
             'private_key' => $this->getSettingValue('private_key'),
             'environment' => $this->getSettingValue('environment') ?: 'sandbox',
             'options' => $this->getOptions(),
+            'show_retainers' => $this->moduleIsEnabled('retainers'),
         ]);
     }
 
