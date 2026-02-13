@@ -6,6 +6,7 @@
     "version": "1.0.0",
     "active": 1,
     "providers": [
+        "Modules\\FluidPay\\Providers\\Event",
         "Modules\\FluidPay\\Providers\\ModuleServiceProvider"
     ],
     "settings": []

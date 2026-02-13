@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Modules\FluidPay\Http\Middleware\AllowFluidPayCsp;
 
 class ModuleServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,8 @@ class ModuleServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->app['router']->aliasMiddleware('fluidpay.csp', AllowFluidPayCsp::class);
+
         $this->loadRoutesFrom(__DIR__ . '/../routes.php');
         $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'fluidpay');
         $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'fluidpay');
@@ -64,7 +67,7 @@ class ModuleServiceProvider extends ServiceProvider
                 return;
             }
 
-            $view->getFactory()->startPush('scripts_end', view('fluidpay::portal.scripts')->render());
+            $view->getFactory()->startPush('scripts_start', view('fluidpay::portal.scripts')->render());
 
             $assetsInjected = true;
         });

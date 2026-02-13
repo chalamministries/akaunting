@@ -1,4 +1,4 @@
-<script src="https://sandbox.fluidpay.com/tokenizer/tokenizer.js"></script>
+<script src="{{ \Modules\FluidPay\Support\Config::tokenizerScriptUrl() }}"></script>
 <script>
     window.AkauntingFluidPay = window.AkauntingFluidPay || (function () {
         const instances = new Map();
@@ -27,6 +27,8 @@
         }
 
         function instantiateTokenizer(options, container) {
+            logDebug('Initializing tokenizer.', options);
+
             if (instances.has(options.containerId)) {
                 const existing = instances.get(options.containerId);
 
@@ -66,7 +68,14 @@
                 config.settings = options.settings;
             }
 
-            const instance = new window.Tokenizer(config);
+            let instance = null;
+
+            try {
+                instance = new window.Tokenizer(config);
+            } catch (error) {
+                console.error('[FluidPay] Tokenizer init failed', error);
+                return;
+            }
 
             instances.set(options.containerId, {
                 instance: instance,
@@ -74,6 +83,22 @@
             });
 
             updateButtonLabels(options.containerId, options.submitLabel);
+
+            setTimeout(function () {
+                const containerSelector = '#' + options.containerId;
+                const iframe = document.querySelector(containerSelector + ' iframe');
+                const iframeCount = iframe ? 1 : 0;
+                logDebug('Tokenizer iframe count', { containerId: options.containerId, iframeCount: iframeCount });
+
+                if (!iframe) {
+                    console.warn('[FluidPay] Tokenizer did not render iframe. Check config:', options);
+                    return;
+                }
+
+                iframe.style.width = '100%';
+                iframe.style.minHeight = '280px';
+                iframe.style.border = '0';
+            }, 500);
         }
 
         function init(options) {
@@ -99,6 +124,7 @@
                     const container = document.getElementById(options.containerId);
 
                     if (!container) {
+                        logDebug('Container not found for config.', options.containerId);
                         console.warn('FluidPay container not found:', options.containerId);
                         continue;
                     }
@@ -116,6 +142,14 @@
                     button.textContent = button.dataset.fluidpaySubmitLabel;
                 }
             });
+        }
+
+        function isHidden(element) {
+            if (!element) {
+                return true;
+            }
+
+            return element.offsetParent === null || element.getClientRects().length === 0;
         }
 
         function processConfigElement(element) {
@@ -138,6 +172,46 @@
                 return;
             }
 
+            if (options && options.containerId) {
+                const container = element.previousElementSibling;
+
+                if (!container || !container.id) {
+                    logDebug('Container not found for config.', options.containerId);
+                    return;
+                }
+
+                const matches = document.querySelectorAll('#' + options.containerId).length;
+
+                if (matches > 1 || container.id !== options.containerId) {
+                    const uniqueId = options.containerId + '-' + Math.random().toString(36).slice(2, 8);
+                    const wrapper = element.closest('.space-y-4');
+
+                    container.id = uniqueId;
+                    options.containerId = uniqueId;
+
+                    if (wrapper) {
+                        wrapper.querySelectorAll('[data-fluidpay-submit]').forEach(function (button) {
+                            button.dataset.fluidpaySubmit = uniqueId;
+                        });
+
+                        const saveCheckbox = wrapper.querySelector('[data-fluidpay-save-for]');
+                        if (saveCheckbox) {
+                            saveCheckbox.dataset.fluidpaySaveFor = uniqueId;
+                            saveCheckbox.id = uniqueId + '-save';
+                        }
+
+                        const saveLabel = wrapper.querySelector('label[for]');
+                        if (saveLabel) {
+                            saveLabel.setAttribute('for', uniqueId + '-save');
+                        }
+                    }
+                }
+
+                if (isHidden(container)) {
+                    logDebug('Container appears hidden, attempting init anyway.', options.containerId);
+                }
+            }
+
             element.dataset.fluidpayProcessed = '1';
 
             init(options);
@@ -149,6 +223,23 @@
             });
         }
 
+        function logDebug(message, data) {
+            if (!window.AkauntingFluidPayDebug) {
+                return;
+            }
+
+            if (typeof data === 'undefined') {
+                console.log('[FluidPay]', message);
+            } else {
+                console.log('[FluidPay]', message, data);
+            }
+        }
+
+        function reload() {
+            logDebug('Reloading tokenizer configs...');
+            bootstrapConfigElements();
+        }
+
         const observer = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
                 mutation.addedNodes.forEach(function (node) {
@@ -157,6 +248,7 @@
                     }
 
                     if (node.hasAttribute && node.hasAttribute('data-fluidpay-config')) {
+                        logDebug('Found config element (direct).', node);
                         processConfigElement(node);
                         return;
                     }
@@ -172,6 +264,19 @@
         });
 
         bootstrapConfigElements();
+
+
+        document.addEventListener('click', function (event) {
+            if (!event || !event.target || !event.target.id) {
+                return;
+            }
+
+            if (event.target.id.indexOf('tabs-payment-method-fluidpay') !== -1) {
+                setTimeout(function () {
+                    reload();
+                }, 150);
+            }
+        });
 
         if (window.axios && !window.axios.__fluidpayRequestInterceptor) {
             window.axios.interceptors.request.use(function (config) {
@@ -200,6 +305,11 @@
                 button.disabled = true;
             });
 
+            const container = document.getElementById(options.containerId);
+            const wrapper = container ? container.closest('.space-y-4') : null;
+            const saveInput = wrapper ? wrapper.querySelector('[data-fluidpay-save-for="' + options.containerId + '"]') : null;
+            const savePaymentMethod = saveInput ? saveInput.checked : false;
+
             fetch(options.tokenEndpoint, {
                 method: 'POST',
                 credentials: 'same-origin',
@@ -212,6 +322,7 @@
                     token: token,
                     invoice_number: options.invoiceNumber,
                     amount: options.amount,
+                    save_payment_method: savePaymentMethod,
                 }),
             })
                 .then(function (response) {
@@ -266,6 +377,7 @@
         return {
             init: init,
             submit: submit,
+            reload: reload,
         };
     })();
 </script>

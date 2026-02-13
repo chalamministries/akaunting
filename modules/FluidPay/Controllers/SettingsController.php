@@ -4,7 +4,7 @@ namespace Modules\FluidPay\Controllers;
 
 use App\Abstracts\Http\Controller;
 use App\Utilities\Modules;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\FluidPay\Support\Config;
@@ -22,15 +22,17 @@ class SettingsController extends Controller
         return view('fluidpay::settings.edit', [
             'public_key' => $this->getSettingValue('public_key'),
             'private_key' => $this->getSettingValue('private_key'),
+            'environment' => $this->getSettingValue('environment') ?: 'sandbox',
             'options' => $this->getOptions(),
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'public_key' => ['required', 'string'],
             'private_key' => ['nullable', 'string'],
+            'environment' => ['nullable', 'in:sandbox,production'],
         ]);
 
         setting([
@@ -53,6 +55,13 @@ class SettingsController extends Controller
             }
         }
 
+        if (! empty($validated['environment'])) {
+            setting([
+                'fluidpay.environment' => $validated['environment'],
+                'fluidpay_environment' => $validated['environment'],
+            ])->save();
+        }
+
         $options = $this->defaultOptions();
 
         foreach ($options as $type => $groups) {
@@ -65,14 +74,22 @@ class SettingsController extends Controller
             }
         }
 
+        $serializedOptions = json_encode($options);
+
         setting([
-            'fluidpay.options' => $options,
-            'fluidpay_options' => $options,
+            'fluidpay.options' => $serializedOptions,
+            'fluidpay_options' => $serializedOptions,
         ])->save();
+
+        $this->storeTokenizerSettings($options);
 
         Modules::clearPaymentMethodsCache();
 
-        return redirect()->back()->with('success', __('fluidpay::settings.messages.saved'));
+        return response()->json([
+            'success' => true,
+            'error' => false,
+            'redirect' => route('fluidpay.settings.edit'),
+        ]);
     }
 
     protected function getSettingValue(string $key): ?string
@@ -101,6 +118,10 @@ class SettingsController extends Controller
 
             if (json_last_error() === JSON_ERROR_NONE) {
                 $stored = $decoded;
+            } else {
+                $unserialized = @unserialize($stored);
+
+                $stored = is_array($unserialized) ? $unserialized : [];
             }
         }
 
@@ -174,5 +195,51 @@ class SettingsController extends Controller
     protected function optionFieldName(string $type, string $group, string $key): string
     {
         return sprintf('%s_%s_%s', $type, $group, $key);
+    }
+
+    protected function storeTokenizerSettings(array $options): void
+    {
+        $documentMap = [
+            'invoice' => Config::DOCUMENT_INVOICES,
+            'retainer' => Config::DOCUMENT_RETAINERS,
+        ];
+
+        foreach ($documentMap as $type => $document) {
+            $tokenizerSettings = $this->buildTokenizerSettings($options[$type] ?? [], $document);
+            $serialized = json_encode($tokenizerSettings);
+
+            setting([
+                "fluidpay.$document" => $serialized,
+                "fluidpay_{$document}" => $serialized,
+            ])->save();
+        }
+    }
+
+    protected function buildTokenizerSettings(array $options, string $document): array
+    {
+        $settings = Config::defaults($document);
+
+        $settings['payment']['types']['card'] = (bool) data_get($options, 'payment.enable_card', true);
+        $settings['payment']['types']['ach'] = (bool) data_get($options, 'payment.enable_ach', true);
+        $settings['payment']['card']['requireCVV'] = (bool) data_get($options, 'payment.require_cvv', true);
+        $settings['payment']['card']['strict_mode'] = (bool) data_get($options, 'payment.strict_mode', false);
+        $settings['payment']['card']['mask_number'] = (bool) data_get($options, 'payment.mask_number', false);
+        $settings['payment']['ach']['showSecCode'] = (bool) data_get($options, 'payment.ach_show_sec_code', false);
+        $settings['payment']['ach']['verifyAccountRouting'] = (bool) data_get($options, 'payment.ach_verify_routing', true);
+        $settings['payment']['calculateFees'] = (bool) data_get($options, 'payment.calculate_fees', true);
+
+        $settings['user']['showName'] = (bool) data_get($options, 'user.show_name', true);
+        $settings['user']['showEmail'] = (bool) data_get($options, 'user.show_email', true);
+        $settings['user']['showPhone'] = (bool) data_get($options, 'user.show_phone', true);
+        $settings['user']['showTitle'] = (bool) data_get($options, 'user.show_title', true);
+        $settings['user']['showInline'] = (bool) data_get($options, 'user.show_inline', true);
+
+        $settings['billing']['show'] = (bool) data_get($options, 'billing.show', true);
+        $settings['billing']['showTitle'] = (bool) data_get($options, 'billing.show_title', true);
+
+        $settings['shipping']['show'] = (bool) data_get($options, 'shipping.show', true);
+        $settings['shipping']['showTitle'] = (bool) data_get($options, 'shipping.show_title', true);
+
+        return $settings;
     }
 }

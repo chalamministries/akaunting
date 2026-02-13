@@ -26,8 +26,8 @@
 
     <x-slot name="content">
         <x-form.container>
-            <x-form id="fluidpay-settings" method="POST" route="fluidpay.settings.update">
-                <x-form.section>
+            <x-form id="setting" method="POST" route="fluidpay.settings.update">
+                <x-form.section  style="background-color: #f2f4fc; padding: 15px; border-radius: 5px" class="rounded-lg">
                     <x-slot name="head">
                         <x-form.section.head
                             title="{{ __('fluidpay::settings.sections.credentials.title') }}"
@@ -52,6 +52,21 @@
                             not-required
                         />
 
+                        <x-form.group.select
+                            name="environment"
+                            label="{{ __('fluidpay::settings.fields.environment') }}"
+                            :options="[
+                                'sandbox' => __('fluidpay::settings.options.environment.sandbox'),
+                                'production' => __('fluidpay::settings.options.environment.production'),
+                            ]"
+                            :selected="old('environment', $environment ?? 'sandbox')"
+                            form-group-class="sm:col-span-6"
+                        />
+
+                        <div id="fluidpay-env-hint" class="sm:col-span-6 text-xs text-orange-500 hidden">
+                            {{ __('fluidpay::settings.messages.environment_changed') }}
+                        </div>
+
                         <div class="sm:col-span-6 text-xs text-gray-500">
                             {!! __('fluidpay::settings.help.credentials') !!}
                         </div>
@@ -59,7 +74,7 @@
                 </x-form.section>
 
                 @foreach ($typesMeta as $type => $meta)
-                    <x-form.section>
+                    <x-form.section style=" background-color: #f2f4fc; padding: 15px; border-radius: 5px" class="rounded-lg">
                         <x-slot name="head">
                             <x-form.section.head
                                 title="{{ $meta['title'] }}"
@@ -68,12 +83,15 @@
                         </x-slot>
 
                         <x-slot name="body">
-                            <div class="space-y-8">
+                            <div class="space-y-8 col-span-full">
                                 <div>
-                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide" style="    background-color: white;
+                                    padding: 5px 10px;
+                                    display: inline-block;
+                                    border-radius: 5px;">
                                         {{ __('fluidpay::settings.groups.payment') }}
                                     </h3>
-                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-6">
                                         <x-form.group.toggle
                                             name="{{ $fieldName($type, 'payment', 'enable_card') }}"
                                             label="{{ __('fluidpay::settings.fields.enable_card') }}"
@@ -124,12 +142,15 @@
                                         />
                                     </div>
                                 </div>
-
+                                <hr />
                                 <div>
-                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide" style="    background-color: white;
+                                    padding: 5px 10px;
+                                    display: inline-block;
+                                    border-radius: 5px;">
                                         {{ __('fluidpay::settings.groups.customer') }}
                                     </h3>
-                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-6">
                                         <x-form.group.toggle
                                             name="{{ $fieldName($type, 'user', 'show_name') }}"
                                             label="{{ __('fluidpay::settings.fields.show_name') }}"
@@ -162,12 +183,15 @@
                                         />
                                     </div>
                                 </div>
-
+                                <hr />
                                 <div>
-                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide" style="    background-color: white;
+                                    padding: 5px 10px;
+                                    display: inline-block;
+                                    border-radius: 5px;">
                                         {{ __('fluidpay::settings.groups.billing') }}
                                     </h3>
-                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-6">
                                         <x-form.group.toggle
                                             name="{{ $fieldName($type, 'billing', 'show') }}"
                                             label="{{ __('fluidpay::settings.fields.billing_show') }}"
@@ -182,12 +206,15 @@
                                         />
                                     </div>
                                 </div>
-
+                                <hr />
                                 <div>
-                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+                                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide" style="    background-color: white;
+                                    padding: 5px 10px;
+                                    display: inline-block;
+                                    border-radius: 5px;">
                                         {{ __('fluidpay::settings.groups.shipping') }}
                                     </h3>
-                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-6">
                                         <x-form.group.toggle
                                             name="{{ $fieldName($type, 'shipping', 'show') }}"
                                             label="{{ __('fluidpay::settings.fields.shipping_show') }}"
@@ -217,4 +244,18 @@
             </x-form>
         </x-form.container>
     </x-slot>
+
+    <x-script folder="settings" file="settings" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const select = document.querySelector('select[name="environment"]');
+            const hint = document.getElementById('fluidpay-env-hint');
+            if (!select || !hint) {
+                return;
+            }
+            select.addEventListener('change', function () {
+                hint.classList.remove('hidden');
+            });
+        });
+    </script>
 </x-layouts.admin>

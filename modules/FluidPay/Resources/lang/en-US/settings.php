@@ -29,6 +29,7 @@ return [
         'public_key' => 'FluidPay Public API Key',
         'private_key' => 'FluidPay Private API Key',
         'private_key_placeholder' => 'Optional – only required when charging tokens server-side',
+        'environment' => 'Environment',
         'enable_card' => 'Enable card payments',
         'enable_ach' => 'Enable ACH payments',
         'require_cvv' => 'Require CVV',
@@ -58,5 +59,19 @@ return [
 
     'messages' => [
         'saved' => 'FluidPay settings saved successfully!',
+        'environment_changed' => 'You may need to regenerate your Public and Private keys.',
+    ],
+
+    'options' => [
+        'environment' => [
+            'sandbox' => 'Sandbox',
+            'production' => 'Production',
+        ],
+    ],
+
+    'email' => [
+        'templates' => [
+            'recurring_failed_customer' => 'Failed recurring payment',
+        ],
     ],
 ];

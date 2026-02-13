@@ -23,7 +23,9 @@ Route::portal('fluidpay', function (): void {
 
     Route::post('invoices/{invoice}', [PortalInvoiceController::class, 'pay'])
         ->name('invoices.pay');
-});
+}, [
+    'middleware' => ['portal', 'fluidpay.csp'],
+]);
 
 Route::signed('fluidpay', function (): void {
     Route::get('invoices/{invoice}', [PortalInvoiceController::class, 'show'])
@@ -31,4 +33,6 @@ Route::signed('fluidpay', function (): void {
 
     Route::post('invoices/{invoice}', [PortalInvoiceController::class, 'pay'])
         ->name('invoices.pay');
-});
+}, [
+    'middleware' => ['signed', 'fluidpay.csp'],
+]);

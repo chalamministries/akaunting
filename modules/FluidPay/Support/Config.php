@@ -105,6 +105,25 @@ class Config
         ];
     }
 
+    public static function environment(): string
+    {
+        $environment = setting('fluidpay.environment') ?? setting('fluidpay_environment');
+
+        return $environment === 'production' ? 'production' : 'sandbox';
+    }
+
+    public static function baseUrl(): string
+    {
+        return static::environment() === 'production'
+            ? 'https://fluidpay.com'
+            : 'https://sandbox.fluidpay.com';
+    }
+
+    public static function tokenizerScriptUrl(): string
+    {
+        return static::baseUrl() . '/tokenizer/tokenizer.js';
+    }
+
     protected static function merge(array $defaults, array $input, array $path = []): array
     {
         $result = $defaults;
