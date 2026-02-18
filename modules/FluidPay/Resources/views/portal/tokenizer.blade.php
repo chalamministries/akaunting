@@ -29,6 +29,8 @@
 
         <div id="{{ $container_id }}" class="min-h-[280px]"></div>
         <div class="hidden" data-fluidpay-config='@json($config ?? [])'></div>
+
+        <p class="mt-3 hidden text-xs text-gray-500" data-fluidpay-disclosure-for="{{ $container_id }}"></p>
     </div>
 
     <div class="flex items-center gap-2 text-sm text-gray-600">

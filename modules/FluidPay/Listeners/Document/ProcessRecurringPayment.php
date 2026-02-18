@@ -19,7 +19,7 @@ class ProcessRecurringPayment
 
     public function handle(Event $event): void
     {
-        if (! $this->moduleIsEnabled('fluidpay')) {
+        if (! $this->moduleIsEnabled('fluidPay')) {
             return;
         }
 

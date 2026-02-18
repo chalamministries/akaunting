@@ -26,7 +26,7 @@
 
     <x-slot name="content">
         <x-form.container>
-            <x-form id="setting" method="POST" route="fluidpay.settings.update">
+            <x-form id="setting" method="POST" route="fluidPay.settings.update">
                 <x-form.section  style="background-color: #f2f4fc; padding: 15px; border-radius: 5px" class="rounded-lg">
                     <x-slot name="head">
                         <x-form.section.head
@@ -242,7 +242,7 @@
                     <x-slot name="foot">
                         <x-form.buttons without-cancel />
 
-                        <x-form.input.hidden name="module_alias" :value="'fluidpay'" />
+                        <x-form.input.hidden name="module_alias" :value="'fluidPay'" />
                     </x-slot>
                 </x-form.section>
             </x-form>

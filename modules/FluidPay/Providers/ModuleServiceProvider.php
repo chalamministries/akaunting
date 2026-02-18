@@ -17,13 +17,13 @@ class ModuleServiceProvider extends ServiceProvider
 {
     use Modules, Permissions;
 
-    protected string $alias = 'fluidpay';
+    protected string $alias = 'fluidPay';
 
     public function boot(): void
     {
         $this->app['router']->aliasMiddleware('fluidpay.csp', AllowFluidPayCsp::class);
 
-        $this->loadRoutesFrom(__DIR__ . '/../routes.php');
+        $this->loadRoutes();
         $this->loadViewsFrom(__DIR__ . '/../Resources/views', 'fluidpay');
         $this->loadTranslationsFrom(__DIR__ . '/../Resources/lang', 'fluidpay');
 
@@ -76,6 +76,23 @@ class ModuleServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+    }
+
+    protected function loadRoutes(): void
+    {
+        if (app()->routesAreCached()) {
+            return;
+        }
+
+        $routes = [
+            'admin.php',
+            'portal.php',
+            'signed.php',
+        ];
+
+        foreach ($routes as $route) {
+            $this->loadRoutesFrom(__DIR__ . '/../Routes/' . $route);
+        }
     }
 
     protected function getPublicKey(): ?string
@@ -131,7 +148,7 @@ class ModuleServiceProvider extends ServiceProvider
             }
 
             $event->menu->route(
-                'fluidpay.settings.edit',
+                $self->alias . '.settings.edit',
                 $name,
                 [],
                 1200,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\FluidPay\Controllers\Portal;
+namespace Modules\FluidPay\Http\Controllers\Portal;
 
 use App\Abstracts\Http\Controller;
 use App\Http\Requests\Portal\InvoiceShow as InvoiceShowRequest;
@@ -443,13 +443,13 @@ class InvoiceController extends Controller
         $companyId = $invoice->company_id ?? company_id();
 
         if ($route && str_starts_with($route->getName(), 'signed.')) {
-            return URL::signedRoute('signed.fluidpay.invoices.pay', [
+            return URL::signedRoute('signed.fluidPay.invoices.confirm', [
                 'company_id' => $companyId,
                 'invoice' => $invoice->id,
             ]);
         }
 
-        return route('portal.fluidpay.invoices.pay', [
+        return route('portal.fluidPay.invoices.confirm', [
             'company_id' => $companyId,
             'invoice' => $invoice->id,
         ]);

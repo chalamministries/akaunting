@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\FluidPay\Controllers;
+namespace Modules\FluidPay\Http\Controllers;
 
 use App\Abstracts\Http\Controller;
 use App\Traits\Modules as ModulesTrait;
@@ -92,7 +92,7 @@ class SettingsController extends Controller
         return response()->json([
             'success' => true,
             'error' => false,
-            'redirect' => route('fluidpay.settings.edit'),
+            'redirect' => route('fluidPay.settings.edit'),
         ]);
     }
 

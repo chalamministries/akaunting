@@ -1,14 +1,19 @@
 {
-    "name": "FluidPay",
-    "alias": "fluidpay",
-    "description": "FluidPay payment gateway integration.",
-    "author": "Your Name",
+    "alias": "fluidPay",
     "version": "1.0.0",
+    "category": "payment-method",
     "active": 1,
     "providers": [
         "Modules\\FluidPay\\Providers\\Event",
         "Modules\\FluidPay\\Providers\\ModuleServiceProvider"
     ],
-    "settings": []
-
+    "aliases": {},
+    "files": [],
+    "requires": [],
+    "reports": [],
+    "widgets": [],
+    "settings": [],
+    "routes": {
+        "redirect_after_install": "fluidPay.settings.edit"
+    }
 }

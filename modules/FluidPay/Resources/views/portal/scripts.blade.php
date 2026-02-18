@@ -2,6 +2,7 @@
 <script>
     window.AkauntingFluidPay = window.AkauntingFluidPay || (function () {
         const instances = new Map();
+        const fluidpayOrigin = '{{ \Modules\FluidPay\Support\Config::baseUrl() }}';
         const messages = @json([
             'tokenization_failed' => __('Tokenization failed. Please verify your information and try again.'),
             'processing_error' => __('Unable to process the payment. Please try again or contact support.'),
@@ -49,6 +50,10 @@
                     }
 
                     submitToken(options, response.token);
+                },
+                validCard: function (card) {
+                    logDebug('Tokenizer valid card payload', card);
+                    updateDisclosure(options, card);
                 },
             };
 
@@ -142,6 +147,79 @@
                     button.textContent = button.dataset.fluidpaySubmitLabel;
                 }
             });
+        }
+
+        function updateDisclosure(options, card) {
+            const containerId = options?.containerId;
+            const disclosureElement = document.querySelector('[data-fluidpay-disclosure-for="' + containerId + '"]');
+
+            if (!disclosureElement) {
+                return;
+            }
+
+            const calculateFees = !!options?.settings?.payment?.calculateFees;
+            const disclosure = card?.Disclosure || card?.disclosure || card?.disclosure_text || '';
+            const fees = card?.fees || {};
+            const serviceFeeValue = fees?.service_fee ?? fees?.serviceFee ?? card?.ServiceFee ?? card?.service_fee ?? card?.serviceFee;
+            const surchargeValue = fees?.surcharge ?? fees?.Surcharge ?? card?.Surcharge ?? card?.surcharge;
+            const requestedAmountValue = fees?.requested_amount ?? fees?.requestedAmount;
+
+            if (!calculateFees) {
+                disclosureElement.classList.add('hidden');
+                disclosureElement.textContent = '';
+                return;
+            }
+
+            const lines = [];
+            const defaultDisclosure = 'Service fees or surcharges may apply. The final amount will be shown before you submit your payment.';
+
+            lines.push(disclosure || defaultDisclosure);
+
+            const serviceFeeLabel = formatFeeAmount(serviceFeeValue, options?.currency);
+            const surchargeLabel = formatFeeAmount(surchargeValue, options?.currency);
+            const totalLabel = formatFeeAmount(requestedAmountValue, options?.currency);
+            const serviceFeeNumeric = Number(serviceFeeValue);
+
+            if (serviceFeeLabel && (!Number.isFinite(serviceFeeNumeric) || serviceFeeNumeric > 0)) {
+                lines.push('Service Fee: ' + serviceFeeLabel);
+            }
+
+            if (surchargeLabel) {
+                lines.push('Surcharge: ' + surchargeLabel);
+            }
+
+            if (totalLabel) {
+                lines.push('Total with fees: ' + totalLabel);
+            }
+
+            disclosureElement.textContent = lines.join(' ');
+            disclosureElement.classList.remove('hidden');
+        }
+
+        function formatFeeAmount(value, currency) {
+            if (value === null || typeof value === 'undefined' || value === '') {
+                return '';
+            }
+
+            const numeric = Number(value);
+            if (Number.isNaN(numeric)) {
+                return String(value);
+            }
+
+            const amount = numeric / 100;
+
+            if (typeof Intl !== 'undefined' && currency) {
+                try {
+                    return new Intl.NumberFormat(undefined, {
+                        style: 'currency',
+                        currency: currency,
+                    }).format(amount);
+                } catch (error) {
+                    return amount.toFixed(2);
+                }
+            }
+
+            return amount.toFixed(2);
         }
 
         function isHidden(element) {
@@ -261,6 +339,21 @@
         observer.observe(document.body, {
             childList: true,
             subtree: true,
+        });
+
+        window.addEventListener('message', function (event) {
+            if (!window.AkauntingFluidPayDebug) {
+                return;
+            }
+
+            if (fluidpayOrigin && event.origin && event.origin.indexOf(fluidpayOrigin) !== 0) {
+                return;
+            }
+
+            logDebug('Tokenizer message', {
+                origin: event.origin,
+                data: event.data,
+            });
         });
 
         bootstrapConfigElements();
