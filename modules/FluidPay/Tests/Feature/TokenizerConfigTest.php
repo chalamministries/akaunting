@@ -68,4 +68,24 @@ class TokenizerConfigTest extends PaymentTestCase
         );
         $this->assertStringContainsString('signature=', $config['tokenEndpoint']);
     }
+
+    public function testItRendersTokenizerHtmlPayload(): void
+    {
+        $this->updateSetting();
+        $this->loginAsCustomer();
+        $this->createInvoice();
+
+        $response = $this->loginAs($this->customer_user)
+            ->get(route('portal.fluidPay.invoices.show', $this->invoice->id))
+            ->assertOk();
+
+        $html = $response->json('html');
+        $containerId = 'fluidpay-tokenizer-' . $this->invoice->id;
+
+        $this->assertStringContainsString('id="' . $containerId . '"', $html);
+        $this->assertStringContainsString('data-fluidpay-config', $html);
+        $this->assertStringContainsString('data-fluidpay-submit="' . $containerId . '"', $html);
+        $this->assertStringContainsString('data-fluidpay-save-for="' . $containerId . '"', $html);
+        $this->assertStringContainsString('data-fluidpay-disclosure-for="' . $containerId . '"', $html);
+    }
 }
