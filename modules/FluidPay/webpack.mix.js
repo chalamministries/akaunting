@@ -16,6 +16,6 @@ mix.options({
             extractComments: false,
         }
     })
-    .js('Resources/assets/js/vendor/fluidpay.js', 'Resources/assets/js/fluidpay.min.js')
+    .js('Resources/assets/js/fluidpay.js', 'Resources/assets/js/fluidpay.min.js')
     // .sass('./../../resources/assets/sass/argon.scss', './../../public/css')
     .vue();
